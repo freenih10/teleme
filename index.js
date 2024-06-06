@@ -66,7 +66,10 @@ Download:
   }
 });
 
-module.exports = bot;
+module.exports = (req, res) => {
+  bot.handleUpdate(req.body, res);
+  return res.status(200).end();
+};
 
 process.once("SIGINT", () => bot.stop("SIGINT"));
 process.once("SIGTERM", () => bot.stop("SIGTERM"));
