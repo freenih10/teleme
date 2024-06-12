@@ -13,21 +13,18 @@ List Command:
 );
 
 bot.command("apkru", async (ctx) => {
-  // Ambil argumen setelah perintah, misalnya angka '5' dari '/apkru 5'
   const input = ctx.message.text.split(" ");
-  const count = input[1] ? parseInt(input[1]) : 10; // Jika tidak ada angka, gunakan nilai default 10
+  const count = input[1] ? parseInt(input[1]) : 10;
 
-  // Batasi jumlah maksimum hasil yang ditampilkan
   const maxResults = Math.min(count, 10);
 
   try {
     const response = await axios.get("https://apkru.vercel.app/apkru");
     const result = response.data;
 
-    // Tampilkan hanya jumlah hasil yang diminta
     for (let i = 0; i < maxResults; i++) {
       const item = result[i];
-      if (!item) break; // Jika tidak ada lebih banyak hasil, hentikan loop
+      if (!item) break;
 
       let message = `
 Nama: 
@@ -47,14 +44,11 @@ ${item.url}
 
 Download:
 `;
-
-      // Tambahkan setiap link download ke pesan
       item.download.forEach((download) => {
         message += `<a href="${download.url}">${download.title}</a>`;
       });
 
       await ctx.telegram.sendChatAction(ctx.chat.id, "upload_photo");
-      // Kirim pesan dengan foto dan informasi download
       await ctx.replyWithPhoto(item.img, {
         caption: message,
         parse_mode: "HTML",
@@ -65,6 +59,39 @@ Download:
     ctx.reply("Terjadi kesalahan saat mengambil data.");
   }
 });
+const commandResponses = {
+  "/hdimage": {
+    response: "Ini adalah pesan respons untuk perintah /hdimage.",
+    handler: async (ctx) => {
+      // Logika khusus untuk /hdimage di sini
+      await ctx.reply("Mengirimkan gambar definisi tinggi...");
+    },
+  },
+  "/removebg": {
+    response: "Ini adalah pesan respons untuk perintah /removebg.",
+    handler: async (ctx) => {
+      // Logika khusus untuk /removebg di sini
+      await ctx.reply("Menghapus latar belakang gambar...");
+    },
+  },
+  // Tambahkan perintah lainnya dengan respons masing-masing di sini
+};
+bot.on("photo", async (ctx) => {
+  const caption = ctx.message.caption ? ctx.message.caption.toLowerCase() : "";
+  const command = commandResponses[caption];
+  if (command) {
+    const message = await ctx.reply(command.response);
+    if (command.handler) {
+      await command.handler(ctx);
+      await ctx.telegram.deleteMessage(ctx.chat.id, message.message_id);
+    }
+    // Menghapus pesan respons setelah penanganan selesai
+  } else {
+    await ctx.reply("Perintah tidak dikenali.");
+  }
+});
+
+bot.launch();
 
 module.exports = (req, res) => {
   bot.handleUpdate(req.body, res);
