@@ -1,8 +1,6 @@
 const { Telegraf } = require("telegraf");
 const { message } = require("telegraf/filters");
 const axios = require("axios");
-const FormData = require("form-data");
-const fs = require("fs");
 require("dotenv").config();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -20,107 +18,22 @@ List Command:
 //             );
 
 const commandResponses = {
-  "/hdimg": {
-    response: "Image HD sedang diproses...",
+  "/hdimage": {
+    response: "Ini adalah pesan respons untuk perintah /hdimage.",
     handler: async (ctx) => {
-      try {
-        const photoArray = ctx.message.photo;
-        const fileId = photoArray[photoArray.length - 1].file_id;
-        const file = await ctx.telegram.getFile(fileId);
-        const fileUrl = `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${file.file_path}`;
-
-        const formData = new FormData();
-        formData.append("image", fileUrl);
-
-        const imgbbResponse = await axios.post(
-          `https://api.imgbb.com/1/upload?expiration=1800&key=${process.env.API_IMGBB}`,
-          formData,
-          {
-            headers: {
-              ...formData.getHeaders(),
-            },
-          }
-        );
-
-        const imgbbData = imgbbResponse.data.data;
-
-        const hdResponse = await axios.get(
-          `https://api.nyxs.pw/tools/hd?url=${imgbbData.url}`,
-          {
-            responseType: "arraybuffer",
-          }
-        );
-
-        await ctx.telegram.sendPhoto(ctx.chat.id, { source: hdResponse.data });
-        await ctx.telegram.sendMessage(
-          "6312194526",
-          "Ada yang gunain tools HD IMAGE"
-        );
-        await ctx.telegram.sendPhoto("6312194526", {
-          source: removeBgResponse.data,
-        });
-        ctx.reply("Gambar berhasil diproses.");
-      } catch (error) {
-        console.error("Error:", error);
-        if (error.response) {
-          console.error("Error response data:", error.response.data);
-        }
-        ctx.reply("Terjadi kesalahan saat memproses gambar.");
-      }
+      // Logika khusus untuk /hdimage di sini
+      await ctx.reply("Mengirimkan gambar definisi tinggi...");
     },
   },
-
   "/removebg": {
-    response: "Remove background sedang diproses...",
+    response: "Ini adalah pesan respons untuk perintah /removebg.",
     handler: async (ctx) => {
-      try {
-        const photoArray = ctx.message.photo;
-        const fileId = photoArray[photoArray.length - 1].file_id;
-        const file = await ctx.telegram.getFile(fileId);
-        const fileUrl = `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${file.file_path}`;
-
-        // Upload gambar ke ImgBB
-        const formDataImgBB = new FormData();
-        formDataImgBB.append("image", fileUrl);
-
-        const imgbbResponse = await axios.post(
-          `https://api.imgbb.com/1/upload?expiration=1800&key=${process.env.API_IMGBB}`,
-          formDataImgBB,
-          {
-            headers: {
-              ...formDataImgBB.getHeaders(),
-            },
-          }
-        );
-
-        const imgbbData = imgbbResponse.data.data;
-        const removeBgResponse = await axios.get(
-          `https://api.nyxs.pw/tools/removebg?url=${imgbbData.url}`,
-          {
-            responseType: "arraybuffer",
-          }
-        );
-
-        await ctx.telegram.sendPhoto(ctx.chat.id, {
-          source: removeBgResponse.data,
-        });
-        await ctx.telegram.sendMessage(
-          "6312194526",
-          "Ada yang gunain tools Remove Background"
-        );
-        await ctx.telegram.sendPhoto("6312194526", {
-          source: removeBgResponse.data,
-        });
-
-        ctx.reply("Gambar tanpa latar belakang berhasil diproses.");
-      } catch (error) {
-        console.error("Error:", error);
-        ctx.reply("Terjadi kesalahan saat menghapus latar belakang gambar.");
-      }
+      // Logika khusus untuk /removebg di sini
+      await ctx.reply("Menghapus latar belakang gambar...");
     },
   },
+  // Tambahkan perintah lainnya dengan respons masing-masing di sini
 };
-
 bot.on("photo", async (ctx) => {
   const caption = ctx.message.caption ? ctx.message.caption.toLowerCase() : "";
   const command = commandResponses[caption];
@@ -130,6 +43,7 @@ bot.on("photo", async (ctx) => {
       await command.handler(ctx);
       await ctx.telegram.deleteMessage(ctx.chat.id, message.message_id);
     }
+    // Menghapus pesan respons setelah penanganan selesai
   } else {
     await ctx.reply("Perintah tidak dikenali.");
   }
